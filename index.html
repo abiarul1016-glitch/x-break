@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>X-Break — X Movement</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yellow:  #FFD93D;
+    --coral:   #FF6B6B;
+    --teal:    #4ECDC4;
+    --purple:  #A855F7;
+    --navy:    #1A1A2E;
+    --white:   #FFFFFF;
+    --bg:      #F8F6FF;
+    --card-radius: 24px;
+
+    /* Tenet colours */
+    --smile-color:   #FFD93D;
+    --smile-dark:    #B8950A;
+    --smile-bg:      #1A160A;
+    --sweat-color:   #FF6B6B;
+    --sweat-dark:    #C0392B;
+    --sweat-bg:      #1A0808;
+    --connect-color: #4ECDC4;
+    --connect-dark:  #1A8C86;
+    --connect-bg:    #081A19;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  }
+  .logo {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: var(--white);
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--yellow); }
+  .tagline {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 56px 24px 36px;
+  }
+  .hero-emoji {
+    font-size: 3.8rem;
+    display: block;
+    margin-bottom: 14px;
+    animation: bounce 2.2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+  .hero h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.1;
+    color: var(--navy);
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--coral) 0%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    margin-top: 14px;
+    font-size: 1.05rem;
+    color: #666;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.65;
+  }
+
+  /* ── TENET PILLS ── */
+  .tenet-pills {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+  .tenet-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+  }
+  .pill-smile   { background: rgba(255,217,61,0.15);  color: #8a6e00; border: 2px solid rgba(255,217,61,0.4); }
+  .pill-sweat   { background: rgba(255,107,107,0.12); color: #9b2222; border: 2px solid rgba(255,107,107,0.35); }
+  .pill-connect { background: rgba(78,205,196,0.12);  color: #0e6b66; border: 2px solid rgba(78,205,196,0.35); }
+
+  /* ── GENERATE BUTTON ── */
+  .generate-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 36px 0 52px;
+  }
+  .btn-generate {
+    background: linear-gradient(135deg, var(--coral) 0%, var(--purple) 100%);
+    color: var(--white);
+    border: none;
+    border-radius: 100px;
+    padding: 18px 50px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(168,85,247,0.32);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-generate:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 42px rgba(168,85,247,0.45);
+  }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .spinner.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── CARDS GRID ── */
+  .cards-section {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .section-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 22px;
+    text-align: center;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 720px) {
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── INDIVIDUAL CARD ── */
+  .break-card {
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 30px 26px 24px;
+    box-shadow: 0 4px 22px rgba(26,26,46,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .break-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+  }
+  .card-smile::before   { background: linear-gradient(90deg, var(--smile-color), #ffb800); }
+  .card-sweat::before   { background: linear-gradient(90deg, var(--sweat-color), #ff4040); }
+  .card-connect::before { background: linear-gradient(90deg, var(--teal), #26d0c8); }
+
+  .break-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 40px rgba(26,26,46,0.13);
+  }
+  .card-icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+  .card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    align-self: flex-start;
+  }
+  .badge-smile   { background: rgba(255,217,61,0.18);  color: #7a5e00; }
+  .badge-sweat   { background: rgba(255,107,107,0.14); color: #8a1a1a; }
+  .badge-connect { background: rgba(78,205,196,0.15);  color: #0b5e5a; }
+
+  .card-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+  .card-body {
+    font-size: 0.93rem;
+    color: #4a4a5a;
+    line-height: 1.7;
+    flex: 1;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    gap: 10px;
+  }
+  .card-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg);
+    border-radius: 100px;
+    padding: 5px 13px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #777;
+    white-space: nowrap;
+  }
+  .btn-launch {
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .btn-launch:hover { transform: scale(1.05); }
+  .card-smile   .btn-launch:hover { background: #b8950a; }
+  .card-sweat   .btn-launch:hover { background: var(--sweat-dark); }
+  .card-connect .btn-launch:hover { background: var(--connect-dark); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 64px 24px;
+    color: #c0bdd6;
+  }
+  .empty-state .big { font-size: 4rem; margin-bottom: 14px; }
+  .empty-state p { font-size: 1rem; color: #aaa; }
+
+  /* ── ERROR BANNER ── */
+  .error-banner {
+    background: #fff0f0;
+    border-left: 4px solid var(--coral);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #c0392b;
+    font-weight: 700;
+    margin: 0 24px 32px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+    font-size: 0.88rem;
+  }
+  .error-banner.show { display: block; }
+
+  /* ══════════════════════════════════════
+     FULL-SCREEN BREAK MODE
+  ══════════════════════════════════════ */
+  #break-mode {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 32px;
+    transition: background 0.4s;
+  }
+  #break-mode.active { display: flex; }
+
+  /* Per-tenet dark backgrounds */
+  #break-mode.bm-smile   { background: var(--smile-bg); }
+  #break-mode.bm-sweat   { background: var(--sweat-bg); }
+  #break-mode.bm-connect { background: var(--connect-bg); }
+
+  .bm-wordmark {
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    white-space: nowrap;
+  }
+  .bm-tenet-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.72rem;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  #break-mode.bm-smile   .bm-tenet-label { color: var(--smile-color); }
+  #break-mode.bm-sweat   .bm-tenet-label { color: var(--sweat-color); }
+  #break-mode.bm-connect .bm-tenet-label { color: var(--teal); }
+
+  .bm-icon {
+    font-size: 7.5rem;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+  /* Different animations per tenet */
+  #break-mode.bm-smile   .bm-icon { animation: wiggle 1.4s ease-in-out infinite; }
+  #break-mode.bm-sweat   .bm-icon { animation: pump 0.6s ease-in-out infinite; }
+  #break-mode.bm-connect .bm-icon { animation: pulse 2s ease-in-out infinite; }
+
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-8deg) scale(1); }
+    50%      { transform: rotate(8deg) scale(1.1); }
+  }
+  @keyframes pump {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.05); opacity: 0.85; }
+  }
+
+  .bm-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 20px;
+    max-width: 700px;
+  }
+
+  /* Joke layout — setup vs punchline */
+  .bm-joke-setup {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: rgba(255,255,255,0.85);
+    max-width: 600px;
+    line-height: 1.65;
+    margin-bottom: 12px;
+  }
+  .bm-punchline-reveal {
+    margin-bottom: 32px;
+  }
+  .btn-reveal {
+    background: var(--smile-color);
+    color: #1A160A;
+    border: none;
+    border-radius: 100px;
+    padding: 14px 34px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 24px rgba(255,217,61,0.35);
+  }
+  .btn-reveal:hover { transform: scale(1.05); box-shadow: 0 10px 32px rgba(255,217,61,0.5); }
+  .bm-punchline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    color: var(--smile-color);
+    margin-top: 18px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    min-height: 2em;
+  }
+  .bm-punchline.show { opacity: 1; transform: translateY(0); }
+
+  /* Sweat — countdown timer */
+  .bm-countdown {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: clamp(5rem, 14vw, 9rem);
+    color: var(--sweat-color);
+    line-height: 1;
+    margin-bottom: 10px;
+    text-shadow: 0 0 60px rgba(255,107,107,0.4);
+    letter-spacing: -4px;
+  }
+  .bm-sweat-instruction {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    color: rgba(255,255,255,0.8);
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .btn-start-timer {
+    background: var(--sweat-color);
+    color: var(--white);
+    border: none;
+    border-radius: 100px;
+    padding: 14px 36px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 24px rgba(255,107,107,0.35);
+    margin-bottom: 28px;
+  }
+  .btn-start-timer:hover { transform: scale(1.05); }
+  .btn-start-timer:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Connect — step-by-step prompt */
+  .bm-connect-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 560px;
+    margin-bottom: 32px;
+    text-align: left;
+  }
+  .connect-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 14px 18px;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .connect-step.visible { opacity: 1; transform: translateY(0); }
+  .step-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--teal);
+    min-width: 28px;
+    line-height: 1.4;
+  }
+  .step-text {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.6;
+  }
+
+  /* Generic body (sweat / connect title subtitle) */
+  .bm-body {
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    color: rgba(255,255,255,0.8);
+    max-width: 600px;
+    line-height: 1.75;
+    margin-bottom: 32px;
+  }
+
+  /* Controls */
+  .bm-controls {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+  .btn-bm {
+    border: none;
+    border-radius: 100px;
+    padding: 13px 30px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn-bm:hover { transform: scale(1.04); }
+  .btn-bm-close { background: rgba(255,255,255,0.1); color: var(--white); }
+  .btn-bm-next  { background: linear-gradient(135deg, var(--coral), var(--purple)); color: var(--white); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.38);
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 24px;
+    letter-spacing: 0.5px;
+  }
+  footer strong { color: rgba(255,255,255,0.65); }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 18px; }
+    .hero  { padding: 38px 18px 26px; }
+    .bm-icon { font-size: 5.5rem; }
+    #break-mode { padding: 60px 20px 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo"><span>X</span> Movement</div>
+  <div class="tagline">Smile · Sweat · Connect</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-emoji">⚡</span>
+  <h1>It's <em>X-Break</em> Time!</h1>
+  <p>Three ways to reset your class — a laugh, a sweat, and a moment of connection. Fresh every time.</p>
+  <div class="tenet-pills">
+    <div class="tenet-pill pill-smile">😄 Smile</div>
+    <div class="tenet-pill pill-sweat">🔥 Sweat</div>
+    <div class="tenet-pill pill-connect">🤝 Connect</div>
+  </div>
+</section>
+
+<!-- GENERATE -->
+<div class="generate-wrap">
+  <button class="btn-generate" id="generateBtn" onclick="generateBreaks()">
+    <span class="spinner" id="spinner"></span>
+    <span id="btnText">✨ Generate Today's X-Break Pack</span>
+  </button>
+</div>
+
+<!-- ERROR -->
+<div class="error-banner" id="errorBanner"></div>
+
+<!-- CARDS -->
+<section class="cards-section">
+  <div class="section-label" id="sectionLabel" style="display:none">Today's X-Break Pack</div>
+  <div class="cards-grid" id="cardsGrid">
+    <div class="empty-state">
+      <div class="big">🎯</div>
+      <p>Hit the button to generate your class's X-Break Pack — fresh every time!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FULL-SCREEN BREAK MODE
+═══════════════════════════════════════ -->
+<div id="break-mode">
+  <div class="bm-wordmark">X Movement · X-Break</div>
+
+  <!-- ── SMILE layout ── -->
+  <div id="bm-smile-content" style="display:none; flex-direction:column; align-items:center; width:100%;">
+    <div class="bm-tenet-label">😄 Smile Break</div>
+    <div class="bm-icon" id="smile-icon">😂</div>
+    <div class="bm-title" id="smile-title"></div>
+    <div class="bm-joke-setup" id="smile-setup"></div>
+    <div class="bm-punchline-reveal">
+      <button class="btn-reveal" id="revealBtn" onclick="revealPunchline()">🥁 Reveal the Punchline!</button>
+      <div class="bm-punchline" id="smile-punchline"></div>
+    </div>
+  </div>
+
+  <!-- ── SWEAT layout ── -->
+  <div id="bm-sweat-content" style="display:none; flex-direction:column; align-items:center; width:100%;">
+    <div class="bm-tenet-label">🔥 Sweat Break</div>
+    <div class="bm-icon" id="sweat-icon">💪</div>
+    <div class="bm-title" id="sweat-title"></div>
+    <div class="bm-sweat-instruction" id="sweat-instruction"></div>
+    <div class="bm-countdown" id="countdown">60</div>
+    <button class="btn-start-timer" id="startTimerBtn" onclick="startTimer()">▶ Start the Clock!</button>
+  </div>
+
+  <!-- ── CONNECT layout ── -->
+  <div id="bm-connect-content" style="display:none; flex-direction:column; align-items:center; width:100%;">
+    <div class="bm-tenet-label">🤝 Connect Break</div>
+    <div class="bm-icon" id="connect-icon">🫂</div>
+    <div class="bm-title" id="connect-title"></div>
+    <div class="bm-connect-steps" id="connect-steps"></div>
+  </div>
+
+  <!-- Shared controls -->
+  <div class="bm-controls" id="bm-controls">
+    <button class="btn-bm btn-bm-close" onclick="closeBreakMode()">← Back to Pack</button>
+    <button class="btn-bm btn-bm-next" id="nextBtn" onclick="nextBreak()">Next Break ✨</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>X Impact</strong> — Free leadership & mental wellness programs for every child. &nbsp;·&nbsp; Registered Canadian Charity
+</footer>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+let currentBreaks = [];
+let currentIndex  = 0;
+let timerInterval = null;
+let timerRunning  = false;
+
+const TYPE_META = {
+  smile:   { label: '😄 Smile',   css: 'card-smile',   bm: 'bm-smile',   badge: 'badge-smile'   },
+  sweat:   { label: '🔥 Sweat',   css: 'card-sweat',   bm: 'bm-sweat',   badge: 'badge-sweat'   },
+  connect: { label: '🤝 Connect', css: 'card-connect', bm: 'bm-connect', badge: 'badge-connect' },
+};
+
+// ─── Generate via Claude API ──────────────────────────────
+async function generateBreaks() {
+  const btn     = document.getElementById('generateBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const errEl   = document.getElementById('errorBanner');
+
+  btn.disabled = true;
+  spinner.classList.add('show');
+  btnText.textContent = 'Cooking up something amazing…';
+  errEl.classList.remove('show');
+
+  const theme = getRandomTheme();
+
+  const prompt = `You are a creative children's wellness expert for X Movement, a Canadian social-impact organization built on three tenets: Smile, Sweat, and Connect.
+
+Generate exactly 3 "X-Break" activities for an elementary school classroom (ages 6–12) — one per tenet. Each must be FUN, age-appropriate, inclusive, and totally fresh.
+
+Today's theme: "${theme}"
+
+Return ONLY valid JSON (no markdown, no explanation, no extra text):
+{
+  "breaks": [
+    {
+      "type": "smile",
+      "icon": "<single emoji>",
+      "title": "<punchy title, max 6 words>",
+      "setup": "<the joke setup or riddle question — just the question, no answer>",
+      "punchline": "<the punchline or answer — make it land!>"
+    },
+    {
+      "type": "sweat",
+      "icon": "<single high-energy emoji>",
+      "title": "<punchy 60-second challenge title>",
+      "instruction": "<exactly what the kids do for 60 seconds — be specific, vivid, and energetic. 2 sentences max.>"
+    },
+    {
+      "type": "connect",
+      "icon": "<single warm emoji>",
+      "title": "<warm, inviting title for the reflection>",
+      "steps": [
+        "<step 1 — e.g. Turn to the person next to you>",
+        "<step 2 — the mindfulness prompt or question to share>",
+        "<step 3 — how they wrap up / share back>"
+      ]
+    }
+  ]
+}
+
+Rules:
+- smile: a kid-friendly stand-up joke or riddle. The setup must be a question. The punchline must be the clever answer. Keep it clean and genuinely funny.
+- sweat: a high-energy 60-second movement burst kids can do at their desks or standing. Be creative — go beyond jumping jacks.
+- connect: a rapid 2-minute peer-to-peer mindfulness reflection. Give exactly 3 clear steps.
+- Tie the theme into each break naturally but cleverly — don't force it.
+- Icons must match the energy. Titles must make kids WANT to do it.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error(`API error ${response.status}`);
+    const data  = await response.json();
+    const raw   = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    currentBreaks = parsed.breaks;
+    renderCards(currentBreaks);
+
+  } catch (err) {
+    errEl.textContent = `Oops! Something went wrong generating your break pack. (${err.message}) — Please try again. You probably don't have any Claude Tokens!`;
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('show');
+    btnText.textContent = '✨ Generate a New X-Break Pack';
+  }
+}
+
+function getRandomTheme() {
+  const themes = [
+    'outer space adventure', 'jungle safari', 'underwater ocean',
+    'superheroes', 'sports champions', 'silly animals',
+    'magic school', 'emoji world', 'favourite seasons',
+    'ancient explorers', 'robots and rockets', 'candy land',
+  ];
+  return themes[Math.floor(Math.random() * themes.length)];
+}
+
+// ─── Render Cards ─────────────────────────────────────────
+function renderCards(breaks) {
+  const grid  = document.getElementById('cardsGrid');
+  const label = document.getElementById('sectionLabel');
+  label.style.display = 'block';
+  grid.innerHTML = '';
+
+  breaks.forEach((b, i) => {
+    const meta = TYPE_META[b.type];
+    const card = document.createElement('div');
+    card.className = `break-card ${meta.css}`;
+
+    // Preview text differs by type
+    let previewText = '';
+    if (b.type === 'smile')   previewText = b.setup;
+    if (b.type === 'sweat')   previewText = b.instruction;
+    if (b.type === 'connect') previewText = b.steps ? b.steps[0] : '';
+
+    card.innerHTML = `
+      <div class="card-icon">${b.icon}</div>
+      <div class="card-badge ${meta.badge}">${meta.label}</div>
+      <div class="card-title">${b.title}</div>
+      <div class="card-body">${previewText}</div>
+      <div class="card-footer">
+        <div class="card-duration">${getDuration(b.type)}</div>
+        <button class="btn-launch" onclick="launchBreak(${i})">Launch 🚀</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function getDuration(type) {
+  if (type === 'smile')   return '⏱ ~2 min';
+  if (type === 'sweat')   return '⏱ 60 sec';
+  if (type === 'connect') return '⏱ ~2 min';
+  return '⏱ 2 min';
+}
+
+// ─── Full-Screen Break Mode ───────────────────────────────
+function launchBreak(index) {
+  currentIndex = index;
+  showBreakMode();
+}
+
+function showBreakMode() {
+  const b    = currentBreaks[currentIndex];
+  const meta = TYPE_META[b.type];
+  const bm   = document.getElementById('break-mode');
+
+  // Reset all content panels
+  ['bm-smile-content', 'bm-sweat-content', 'bm-connect-content'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  // Set tenet class
+  bm.className = `active ${meta.bm}`;
+
+  // Populate & show the right panel
+  if (b.type === 'smile') {
+    document.getElementById('smile-icon').textContent  = b.icon;
+    document.getElementById('smile-title').textContent = b.title;
+    document.getElementById('smile-setup').textContent = b.setup;
+    const pl = document.getElementById('smile-punchline');
+    pl.textContent = b.punchline;
+    pl.classList.remove('show');
+    document.getElementById('revealBtn').style.display = 'inline-block';
+    document.getElementById('bm-smile-content').style.display = 'flex';
+  }
+
+  if (b.type === 'sweat') {
+    document.getElementById('sweat-icon').textContent        = b.icon;
+    document.getElementById('sweat-title').textContent       = b.title;
+    document.getElementById('sweat-instruction').textContent = b.instruction;
+    resetTimer();
+    document.getElementById('bm-sweat-content').style.display = 'flex';
+  }
+
+  if (b.type === 'connect') {
+    document.getElementById('connect-icon').textContent  = b.icon;
+    document.getElementById('connect-title').textContent = b.title;
+    const stepsEl = document.getElementById('connect-steps');
+    stepsEl.innerHTML = '';
+    (b.steps || []).forEach((step, si) => {
+      const div = document.createElement('div');
+      div.className = 'connect-step';
+      div.innerHTML = `<div class="step-num">${si + 1}</div><div class="step-text">${step}</div>`;
+      stepsEl.appendChild(div);
+      // Staggered reveal
+      setTimeout(() => div.classList.add('visible'), si * 320 + 100);
+    });
+    document.getElementById('bm-connect-content').style.display = 'flex';
+  }
+
+  // Next button
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.style.display = currentIndex < currentBreaks.length - 1 ? 'inline-flex' : 'none';
+
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBreakMode() {
+  clearTimerInterval();
+  document.getElementById('break-mode').className = '';
+  document.body.style.overflow = '';
+}
+
+function nextBreak() {
+  clearTimerInterval();
+  if (currentIndex < currentBreaks.length - 1) {
+    currentIndex++;
+    showBreakMode();
+  }
+}
+
+// ─── Smile: Punchline Reveal ──────────────────────────────
+function revealPunchline() {
+  document.getElementById('smile-punchline').classList.add('show');
+  document.getElementById('revealBtn').style.display = 'none';
+}
+
+// ─── Sweat: 60-second Countdown ──────────────────────────
+function resetTimer() {
+  clearTimerInterval();
+  timerRunning = false;
+  document.getElementById('countdown').textContent = '60';
+  document.getElementById('countdown').style.color = 'var(--sweat-color)';
+  const btn = document.getElementById('startTimerBtn');
+  btn.textContent = '▶ Start the Clock!';
+  btn.disabled = false;
+}
+
+function startTimer() {
+  if (timerRunning) return;
+  timerRunning = true;
+  const btn = document.getElementById('startTimerBtn');
+  btn.disabled = true;
+  btn.textContent = '🔥 GO GO GO!';
+
+  let secs = 60;
+  const countEl = document.getElementById('countdown');
+
+  timerInterval = setInterval(() => {
+    secs--;
+    countEl.textContent = secs;
+
+    // Color shifts as time runs out
+    if (secs <= 10) countEl.style.color = '#FFD93D';
+    if (secs <= 3)  countEl.style.color = '#fff';
+
+    if (secs <= 0) {
+      clearTimerInterval();
+      countEl.textContent = '🎉';
+      countEl.style.fontSize = '6rem';
+      countEl.style.letterSpacing = '0';
+      btn.textContent = '✅ Time\'s Up! Amazing!';
+      btn.disabled = true;
+    }
+  }, 1000);
+}
+
+function clearTimerInterval() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerRunning = false;
+}
+
+// ESC to close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeBreakMode();
+});
+</script>
+</body>
+</html>
